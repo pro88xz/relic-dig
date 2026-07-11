@@ -24,6 +24,7 @@ import {
 } from '../core/relics';
 import { getStreak, touchStreak } from '../core/streak';
 import { registerApprovedRelics, getApprovedRelics } from '../core/relics';
+import { themeForSite } from '../core/themes';
 import { createSubmission, listSubmissions, voteSubmission, hasVoted, approvedRelics } from '../core/submissions';
 
 export const api = new Hono();
@@ -88,6 +89,7 @@ api.get('/init', async (c) => {
     const username = await getUser();
     const siteId = currentSiteId();
     registerApprovedRelics(await approvedRelics());
+    const theme = themeForSite(siteId);
     const grid = buildSiteGrid(siteId);
     const dug = await loadDug(username, siteId);
     const tiles: Tile[] = Array.from({ length: GRID_SIZE }, (_, i) => {
@@ -109,6 +111,10 @@ api.get('/init', async (c) => {
       heat,
       streak: streakInfo.streak,
       bonusDigs: streakInfo.bonusDigs,
+      theme: {
+        id: theme.id, name: theme.name, kicker: theme.kicker, blurb: theme.blurb,
+        accent: theme.accent, bgTop: theme.bgTop, bgBottom: theme.bgBottom,
+      },
     });
   } catch (error) {
     const message =

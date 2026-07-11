@@ -92,3 +92,13 @@ export type VoteResponse = {
   submission: Submission;
   youVoted: boolean;
 };
+
+export type ThemeInfo = {
+  id: string;
+  name: string;
+  kicker: string;
+  blurb: string;
+  accent: string;
+  bgTop: string;
+  bgBottom: string;
+};

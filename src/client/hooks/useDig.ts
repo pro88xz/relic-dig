@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type {
+  ThemeInfo,
   InitResponse,
   DigResponse,
   MuseumResponse,
@@ -27,6 +28,7 @@ export function useDig() {
   const [catalog, setCatalog] = useState<RelicDef[]>([]);
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [heat, setHeat] = useState<number[]>([]);
+  const [theme, setTheme] = useState<ThemeInfo | null>(null);
   const [streak, setStreak] = useState(0);
   const [bonusDigs, setBonusDigs] = useState(0);
   const [digsUsed, setDigsUsed] = useState(0);
@@ -54,6 +56,7 @@ export function useDig() {
         setHeat(data.heat ?? []);
         setStreak(data.streak ?? 0);
         setBonusDigs(data.bonusDigs ?? 0);
+        setTheme(data.theme ?? null);
         setDigsUsed(data.digsUsed);
         setDigsTotal(data.digsTotal);
       } catch {
@@ -158,7 +161,7 @@ export function useDig() {
   }, []);
 
   return {
-    username, siteId, catalog, tiles, heat, streak, bonusDigs,
+    username, siteId, catalog, tiles, heat, streak, bonusDigs, theme,
     digsUsed, digsTotal, loading, digging, justDug,
     toast, error, sound, museum, museumOpen,
     dig, toggleSound, openMuseum, closeMuseum, dismissToast, devReset,

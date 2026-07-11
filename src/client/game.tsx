@@ -1,7 +1,7 @@
 import './index.css';
 import './relic.css';
 
-import { StrictMode, useState } from 'react';
+import React, { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Rarity, RelicDef, MuseumEntry } from '../shared/api';
 import { useDig } from './hooks/useDig';
@@ -180,7 +180,7 @@ function rank(r: Rarity): number {
 
 export const App = () => {
   const {
-    username, siteId, catalog, tiles, heat, streak, bonusDigs,
+    username, siteId, catalog, tiles, heat, streak, bonusDigs, theme,
     digsUsed, digsTotal, loading, digging, justDug,
     toast, error, sound, museum, museumOpen,
     dig, toggleSound, openMuseum, closeMuseum, dismissToast, devReset,
@@ -190,14 +190,25 @@ export const App = () => {
   const digsLeft = digsTotal - digsUsed;
   const catById = Object.fromEntries(catalog.map((r) => [r.id, r]));
 
+  const rootStyle = theme
+    ? ({
+        background: `radial-gradient(circle at 50% -10%, ${theme.bgTop} 0%, ${theme.bgBottom} 70%)`,
+        ['--relic-lamp' as string]: theme.accent,
+      } as React.CSSProperties)
+    : undefined;
+
   return (
-    <div className="relic-root">
+    <div className="relic-root" style={rootStyle}>
       <header className="relic-header">
         <div className="relic-title">RELIC</div>
+        <div className="relic-theme-name" style={theme ? { color: theme.accent } : undefined}>
+          {theme ? theme.kicker : ''}
+        </div>
         <div className="relic-sub">
-          Dig Site · {siteId || '…'}
+          {theme ? theme.name : 'Dig Site'} · {siteId || '…'}
           {username ? <span className="relic-digger"> · {username}</span> : null}
         </div>
+        {theme ? <div className="relic-theme-blurb">{theme.blurb}</div> : null}
       </header>
 
       <div className="relic-status">
