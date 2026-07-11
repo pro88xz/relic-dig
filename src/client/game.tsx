@@ -189,7 +189,6 @@ export const App = () => {
 
   const digsLeft = digsTotal - digsUsed;
   const catById = Object.fromEntries(catalog.map((r) => [r.id, r]));
-  const IS_DEV = true;
 
   return (
     <div className="relic-root">
@@ -213,11 +212,13 @@ export const App = () => {
           ) : null}
         </div>
         <div className="relic-controls">
-          {IS_DEV ? (
-            <button className="relic-icon-btn" onClick={devReset} aria-label="reset digs" title="Reset today's digs (dev)">
-              ↺
-            </button>
-          ) : null}
+          <button
+            className={'relic-newsite-btn' + (digsLeft <= 0 ? ' relic-newsite-btn-ready' : '')}
+            onClick={devReset}
+            title="Excavate a fresh dig site"
+          >
+            ↻ New site
+          </button>
           <button className="relic-icon-btn" onClick={toggleSound} aria-label="toggle sound">
             {sound ? '🔊' : '🔈'}
           </button>

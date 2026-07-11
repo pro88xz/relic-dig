@@ -36,12 +36,13 @@ export function useDig() {
   const [justDug, setJustDug] = useState<number | null>(null);
   const [toast, setToast] = useState<Toast>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sound, setSound] = useState(false);
+  const [sound, setSound] = useState(true);
 
   const [museum, setMuseum] = useState<MuseumResponse | null>(null);
   const [museumOpen, setMuseumOpen] = useState(false);
 
   useEffect(() => {
+    setSoundEnabled(true);
     (async () => {
       try {
         const res = await fetch('/api/init');

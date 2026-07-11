@@ -548,3 +548,22 @@
 @media (prefers-reduced-motion: reduce) {
   .relic-legendary-dim, .relic-legendary-kicker, .relic-toast-legendary { animation: none; }
 }
+
+.relic-newsite-btn {
+  background: transparent;
+  border: 1px solid var(--relic-soil-edge);
+  color: var(--relic-brass);
+  padding: 8px 12px;
+  border-radius: 2px;
+  font-size: 12px;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.relic-newsite-btn:hover { border-color: var(--relic-brass); color: var(--relic-parchment); }
+.relic-newsite-btn-ready {
+  border-color: var(--relic-lamp);
+  color: var(--relic-lamp);
+  background: rgba(224,169,59,.1);
+  animation: relic-kicker-pulse 1.8s ease-in-out infinite;
+}
