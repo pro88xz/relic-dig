@@ -3,11 +3,12 @@ import './relic.css';
 
 import React, { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { Rarity, RelicDef, MuseumEntry } from '../shared/api';
+import type { Rarity, RelicDef } from '../shared/api';
 import { useDig } from './hooks/useDig';
 import { iconForRelic, ICONS } from './icons';
 import { curatorComplete, FOOLS_GOLD_LINE } from './curator';
 import { SubmitPanel } from './Submit';
+import { CollectionsPanel } from './Collections';
 
 const RARITY_COLOR: Record<Rarity, string> = {
   junk: '#8a8175',
@@ -111,81 +112,16 @@ function RevealToast({
   );
 }
 
-function Museum({
-  entries,
-  catalog,
-  onClose,
-}: {
-  entries: MuseumEntry[];
-  catalog: RelicDef[];
-  onClose: () => void;
-}) {
-  const byId = Object.fromEntries(catalog.map((r) => [r.id, r]));
-  const held = entries
-    .map((e) => ({ entry: e, relic: byId[e.relicId] }))
-    .filter((x) => x.relic)
-    .sort((a, b) => rank(b.relic!.rarity) - rank(a.relic!.rarity));
-
-  const totalKinds = catalog.filter((r) => r.rarity !== 'junk').length;
-  const completeCount = held.filter((h) => h.entry.complete && h.relic!.rarity !== 'junk').length;
-
-  return (
-    <div className="relic-museum-backdrop" onClick={onClose}>
-      <div className="relic-museum" onClick={(e) => e.stopPropagation()}>
-        <div className="relic-museum-head">
-          <span>THE MUSEUM</span>
-          <button onClick={onClose} className="relic-museum-close" aria-label="close">✕</button>
-        </div>
-        <div className="relic-museum-progress">
-          {completeCount} / {totalKinds} relics restored
-        </div>
-        {held.length === 0 ? (
-          <div className="relic-museum-empty">Nothing catalogued yet. The dig awaits.</div>
-        ) : (
-          <div className="relic-museum-grid">
-            {held.map(({ entry, relic }) => {
-              const total = relic!.pieces;
-              const have = entry.piecesHeld.filter((n) => n > 0).length;
-              const color = RARITY_COLOR[relic!.rarity];
-              return (
-                <div
-                  key={entry.relicId}
-                  className="relic-card"
-                  style={{ borderColor: color, opacity: entry.complete ? 1 : 0.9 }}
-                >
-                  <div className="relic-card-glyph">
-                    <Svg markup={iconForRelic(relic!.id, relic!.glyph)} color={color} size={34} />
-                  </div>
-                  <div className="relic-card-name">{relic!.name}</div>
-                  <div className="relic-card-rarity" style={{ color }}>{RARITY_LABEL[relic!.rarity]}</div>
-                  {total > 1 ? (
-                    <div className="relic-card-progress">
-                      {entry.complete ? '◆ complete' : `${have} / ${total} pieces`}
-                    </div>
-                  ) : null}
-                  <div className="relic-card-plaque">{relic!.plaque}</div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function rank(r: Rarity): number {
-  return { junk: 0, common: 1, rare: 2, legendary: 3 }[r];
-}
 
 export const App = () => {
   const {
     username, siteId, catalog, tiles, heat, streak, bonusDigs, theme,
     digsUsed, digsTotal, loading, digging, justDug,
-    toast, error, sound, museum, museumOpen,
-    dig, toggleSound, openMuseum, closeMuseum, dismissToast, devReset,
+    toast, error, sound,
+    dig, toggleSound, dismissToast, devReset,
   } = useDig();
   const [workshopOpen, setWorkshopOpen] = useState(false);
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
 
   const digsLeft = digsTotal - digsUsed;
   const catById = Object.fromEntries(catalog.map((r) => [r.id, r]));
@@ -233,7 +169,7 @@ export const App = () => {
           <button className="relic-icon-btn" onClick={toggleSound} aria-label="toggle sound">
             {sound ? '🔊' : '🔈'}
           </button>
-          <button className="relic-museum-btn" onClick={openMuseum}>Museum</button>
+          <button className="relic-museum-btn" onClick={() => setCollectionsOpen(true)}>Museum</button>
           <button className="relic-museum-btn" onClick={() => setWorkshopOpen(true)}>Workshop</button>
         </div>
       </div>
@@ -285,16 +221,11 @@ export const App = () => {
         />
       ) : null}
 
+      {collectionsOpen ? <CollectionsPanel onClose={() => setCollectionsOpen(false)} /> : null}
       {workshopOpen ? <SubmitPanel onClose={() => setWorkshopOpen(false)} /> : null}
 
-      {museumOpen && museum ? (
-        <Museum entries={museum.entries} catalog={museum.catalog} onClose={closeMuseum} />
-      ) : null}
-      {museumOpen && !museum ? (
-        <div className="relic-museum-backdrop" onClick={closeMuseum}>
-          <div className="relic-museum-empty">Opening the archive…</div>
-        </div>
-      ) : null}
+      
+      
     </div>
   );
 };

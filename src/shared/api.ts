@@ -102,3 +102,53 @@ export type ThemeInfo = {
   bgTop: string;
   bgBottom: string;
 };
+
+export type CollectionRelic = {
+  id: string;
+  name: string;
+  rarity: string;
+  owned: boolean;
+};
+
+export type CollectionInfo = {
+  id: string;
+  name: string;
+  wing: string;
+  blurb: string;
+  themeHint: string;
+  total: number;
+  have: number;
+  complete: boolean;
+  relics: CollectionRelic[];
+};
+
+export type ExhibitInfo = {
+  week: string;
+  progress: number;
+  goal: number;
+  complete: boolean;
+  reward: { name: string; blurb: string };
+};
+
+export type ProgressResponse = {
+  type: 'progress';
+  rank: string;
+  completedCollections: number;
+  totalCollections: number;
+  collections: CollectionInfo[];
+  exhibit: ExhibitInfo;
+};
+
+export type LeaderboardEntry = {
+  username: string;
+  score: number;
+  wings: number;
+  relics: number;
+};
+
+export type LeaderboardResponse = {
+  type: 'leaderboard';
+  top: LeaderboardEntry[];
+  myRank: number | null;
+  myScore: number;
+};

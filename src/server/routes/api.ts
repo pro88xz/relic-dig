@@ -12,6 +12,8 @@ import type {
   ListSubmissionsResponse,
   SubmissionWithVote,
   VoteResponse,
+  ProgressResponse,
+  LeaderboardResponse,
 } from '../../shared/api';
 import {
   CATALOG,
@@ -25,6 +27,9 @@ import {
 import { getStreak, touchStreak } from '../core/streak';
 import { registerApprovedRelics, getApprovedRelics } from '../core/relics';
 import { themeForSite } from '../core/themes';
+import { collectionProgress, rankForCompleted } from '../core/collections';
+import { getExhibit, addToExhibit } from '../core/exhibit';
+import { updateScore, topCurators, myStanding } from '../core/leaderboard';
 import { createSubmission, listSubmissions, voteSubmission, hasVoted, approvedRelics } from '../core/submissions';
 
 export const api = new Hono();
@@ -157,6 +162,7 @@ api.post('/dig', async (c) => {
     if (content.kind === 'relic') {
       revealed = getRelic(content.relicId) ?? null;
       completedRelic = await addPiece(username, content.relicId, content.piece);
+      await addToExhibit(1);
     }
     const heat = computeHeat(grid, dug);
     return c.json<DigResponse>({
@@ -270,6 +276,59 @@ api.post('/vote-relic', async (c) => {
     return c.json<VoteResponse>({ type: 'voted', submission, youVoted });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'vote failed';
+    return c.json<ErrorResponse>({ status: 'error', message }, 400);
+  }
+});
+
+async function ownedPiecesMap(user: string): Promise<Record<string, { held: number; total: number }>> {
+  const museum = await loadMuseum(user);
+  const out: Record<string, { held: number; total: number }> = {};
+  for (const [relicId, piecesHeld] of Object.entries(museum)) {
+    const relic = getRelic(relicId);
+    if (!relic) continue;
+    const held = piecesHeld.filter((n) => n > 0).length;
+    out[relicId] = { held, total: relic.pieces };
+  }
+  return out;
+}
+
+api.get('/progress', async (c) => {
+  try {
+    const username = await getUser();
+    const owned = await ownedPiecesMap(username);
+    const collections = collectionProgress(owned);
+    const completed = collections.filter((col) => col.complete).length;
+    const rank = rankForCompleted(completed);
+    const relicsOwned = Object.values(owned).filter((pp) => pp.held >= pp.total && pp.total > 0).length;
+    await updateScore(username, completed, relicsOwned);
+    const exhibit = await getExhibit();
+    return c.json<ProgressResponse>({
+      type: 'progress',
+      rank,
+      completedCollections: completed,
+      totalCollections: collections.length,
+      collections,
+      exhibit,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'progress failed';
+    return c.json<ErrorResponse>({ status: 'error', message }, 400);
+  }
+});
+
+api.get('/leaderboard', async (c) => {
+  try {
+    const username = await getUser();
+    const top = await topCurators(10);
+    const standing = await myStanding(username);
+    return c.json<LeaderboardResponse>({
+      type: 'leaderboard',
+      top,
+      myRank: standing.rank,
+      myScore: standing.score,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'leaderboard failed';
     return c.json<ErrorResponse>({ status: 'error', message }, 400);
   }
 });
